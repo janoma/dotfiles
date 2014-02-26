@@ -1,0 +1,11 @@
+[color]
+    ui = true
+[alias]
+    st = status
+    ci = commit
+    co = checkout
+    br = branch
+    graph = log --graph --decorate --oneline --all
+[user]
+    name = Alejandro Mallea
+    email = janoma@gmail.com
