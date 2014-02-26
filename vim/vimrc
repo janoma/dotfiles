@@ -1,0 +1,125 @@
+set nocompatible
+filetype off
+
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+
+" Let Vundle manage Vundle
+Bundle 'gmarik/vundle'
+
+" Commonly agreed (?) healthy (a.k.a. sensible) vim default settings
+Bundle 'tpope/vim-sensible'
+
+" A, to switch between source and header files quickly
+Bundle 'vim-scripts/a.vim'
+
+" YouCompleteMe, for C++ autocompletion
+Bundle 'Valloric/YouCompleteMe'
+
+" Toggle, to switch between true and false, && and ||, on and off, and others
+Bundle 'vim-scripts/Toggle'
+
+" Molokai color scheme
+Bundle 'tomasr/molokai'
+
+filetype plugin indent on
+"
+" Brief help
+" :BundleList          - list configured bundles
+" :BundleInstall(!)    - install (update) bundles
+" :BundleSearch(!) foo - search (or refresh cache first) for foo
+" :BundleClean(!)      - confirm (or auto-approve) removal of unused bundles
+"
+" see :h vundle for more details or wiki for FAQ
+" NOTE: comments after Bundle commands are not allowed.
+
+" My settings
+"
+" Vertical split opens to the right
+set splitright
+" Horizontal split opens below
+set splitbelow
+
+" Show line numbers
+set number
+
+" Show at least 6 characters in width in line numbers
+set numberwidth=6
+
+" A status line to my taste
+set statusline=%F%m%r%h%w\ (%{&ff}){%Y}\ [%l,%v][%p%%]
+
+" Adds angled brackets to matching pairs to use with %
+set matchpairs+=<:>
+
+" No backup file before overwriting a file
+set nobackup
+
+" No swap file while editing
+set noswapfile
+
+" Use visual bell instead of beeping, but without anything flashy
+set visualbell
+set t_vb=
+
+" Use 256 colors
+set t_Co=256
+
+" Molokai color scheme
+let g:molokai_original = 1
+colorscheme molokai
+"set background=dark
+
+" Fixes background color mess with tmux
+if &term =~ '256color'
+  " disable Background Color Erase (BCE) so that color schemes
+  " render properly when inside 256-color tmux and GNU screen.
+  " see also http://snk.tuxfamily.org/log/vim-256color-bce.html
+  set t_ut=
+endif
+
+" No spell checking
+set nospell
+
+" Options for search and highlight
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+
+" Wrap lines after 80 characters
+set textwidth=80
+set formatoptions+=rn
+
+" Tab options
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set smartindent
+
+" Visually displays tabs and trailing whitespace
+set listchars=tab:▸-,trail:·
+set list
+
+" Disable X clipboard support if DISPLAY is set, because it
+" greatly slows down console vim startup.
+if ! has( "gui_running" )
+    let g:display_num =
+                \ substitute( $DISPLAY ,
+                \ "^[[:alpha:]]*:\([[:digit:]]\+\)\.[[:digit:]]\+$" ,
+                \ "\1" , "" )
+    if ( g:display_num >= 0 )
+        set clipboard=exclude:.*
+    endif
+endif
+
+set shortmess=aIoO
+
+" So backspace can work properly
+set backspace=indent,eol,start
+
+" Syntax highlight on by default!
+syntax on
+
+" YouCompleteMe options for my $HOME/dev folder
+let g:ycm_extra_conf_globlist = ['~/dev/*','!~/*']
