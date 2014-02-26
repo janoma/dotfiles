@@ -17,7 +17,7 @@ bash
 Installation
 =======
     git clone https://github.com/janoma/dotfiles ~/.dotfiles
-    ln -s ~/.dotfiles/vim/vimrc ~/.vimrc
-    ln -s ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
-    ln -s ~/.dotfiles/bash/bash_profile ~/.bash_profile
+    ln -si ~/.dotfiles/vim/vimrc ~/.vimrc
+    ln -si ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
+    ln -si ~/.dotfiles/bash/bash_profile ~/.bash_profile
     vim +BundleInstall +qa
