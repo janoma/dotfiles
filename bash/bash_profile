@@ -1,0 +1,17 @@
+# Environment variables
+export EDITOR=vim
+
+# Terminal prompt
+export PS1="\u@\h:\w\$ "
+
+# Aliases
+if [ -f ~/.bash/bash.alias ];
+then
+    source ~/.bash/bash.alias
+fi
+
+# Local settings
+if [ -f ~/.bash/bash_profile.local ];
+then
+    source ~/.bash/bash_profile.local
+fi

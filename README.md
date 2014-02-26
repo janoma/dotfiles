@@ -27,6 +27,8 @@ With symbolic links
     ln -si ~/.dotfiles/vim/vimrc ~/.vimrc
     ln -si ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
     ln -si ~/.dotfiles/bash/bash_profile ~/.bash_profile
+    mkdir ~/.bash
+    ln -si ~/.dotfiles/bash/bash.alias ~/.bash/bash.alias
     ln -si ~/.dotfiles/git/gitconfig ~/.gitconfig
     vim +BundleInstall +qa
 
@@ -36,5 +38,7 @@ With copies of the originals
     cp -i ~/.dotfiles/vim/vimrc ~/.vimrc
     cp -i ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
     cp -i ~/.dotfiles/bash/bash_profile ~/.bash_profile
+    mkdir ~/.bash
+    cp -i ~/.dotfiles/bash/bash.alias ~/.bash/bash.alias
     cp -i ~/.dotfiles/git/gitconfig ~/.gitconfig
     vim +BundleInstall +qa
