@@ -38,5 +38,5 @@ Make sure you have [Homebrew](http://brew.sh/).
 
 When you run `vim +BundleInstall +qa` the first time, it will complain that it
 doesn't find the `molokai` color scheme. Just ignore the message, since the
-corresponding package will be downloaded with that command and available
+corresponding package will be downloaded with that command and be available
 afterwards.
