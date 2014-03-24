@@ -9,3 +9,5 @@
 [user]
     name = Alejandro Mallea
     email = janoma@gmail.com
+[push]
+     default = simple
