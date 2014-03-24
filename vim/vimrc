@@ -22,6 +22,9 @@ Bundle 'vim-scripts/Toggle'
 " Molokai color scheme
 Bundle 'tomasr/molokai'
 
+" Markdown Vim Mode
+Bundle 'plasticboy/vim-markdown'
+
 filetype plugin indent on
 "
 " Brief help
@@ -123,3 +126,6 @@ syntax on
 
 " YouCompleteMe options for my $HOME/dev folder
 let g:ycm_extra_conf_globlist = ['~/dev/*','!~/*']
+
+" Don't fold during markdown highlight
+let g:vim_markdown_folding_disabled=1
