@@ -25,6 +25,9 @@ Bundle 'tomasr/molokai'
 " Markdown Vim Mode
 Bundle 'plasticboy/vim-markdown'
 
+" Syntax highlight for bison and flex
+Bundle 'justinmk/vim-syntax-extra'
+
 filetype plugin indent on
 "
 " Brief help
