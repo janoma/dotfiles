@@ -4,7 +4,7 @@ A set of basic, common settings for my \*nix environment.
 
 vim
 ---
-Includes [YouCompleteMe](https://github.com/Valloric/YouCompleteMe), [a](https://github.com/vim-scripts/a.vim), [vim-sensible](https://github.com/tpope/vim-sensible), [vundle](https://github.com/gmarik/Vundle.vim) and [Toggle](https://github.com/vim-scripts/Toggle).
+Includes [a](https://github.com/vim-scripts/a.vim), [vim-sensible](https://github.com/tpope/vim-sensible), [vundle](https://github.com/gmarik/Vundle.vim) and [Toggle](https://github.com/vim-scripts/Toggle).
 
 tmux
 ---
@@ -33,8 +33,6 @@ Make sure you have [Homebrew](http://brew.sh/).
     mkdir -p ~/.vim/bundle
     git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
     vim +BundleInstall +qa
-    cd ~/.vim/bundle/YouCompleteMe
-    ./install.sh --clang-completer
 
 When you run `vim +BundleInstall +qa` the first time, it will complain that it
 doesn't find the `molokai` color scheme. Just ignore the message, since the
