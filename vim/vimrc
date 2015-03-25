@@ -13,9 +13,6 @@ Bundle 'tpope/vim-sensible'
 " A, to switch between source and header files quickly
 Bundle 'vim-scripts/a.vim'
 
-" YouCompleteMe, for C++ autocompletion
-Bundle 'Valloric/YouCompleteMe'
-
 " Toggle, to switch between true and false, && and ||, on and off, and others
 Bundle 'vim-scripts/Toggle'
 
