@@ -1,6 +1,6 @@
 alias tmux='tmux -2'
 alias less='less -R'
-alias ls='ls -G'
+alias ls='ls -G --color=auto'
 alias l='ls -lG'
 alias ll='ls -lG | less -R'
 alias rm='rm -i'
