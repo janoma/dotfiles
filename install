@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+ln -si $HOME/.dotfiles/vim/vimrc $HOME/.vimrc
+ln -si $HOME/.dotfiles/tmux/tmux.conf $HOME/.tmux.conf
+ln -si $HOME/.dotfiles/bash/bash_profile $HOME/.bash_profile
+mkdir $HOME/.bash
+ln -si $HOME/.dotfiles/bash/bash.alias $HOME/.bash/bash.alias
+ln -si $HOME/.dotfiles/git/gitconfig $HOME/.gitconfig
+mkdir -p $HOME/.vim/bundle
+git clone https://github.com/gmarik/vundle.git $HOME/.vim/bundle/vundle
+vim +BundleInstall +qa
