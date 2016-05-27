@@ -21,18 +21,11 @@ Replace for your own data if you ever clone this.
 
 Installation
 =======
-Make sure you have [Homebrew](http://brew.sh/).
 
-    git clone https://github.com/janoma/dotfiles ~/.dotfiles
-    ln -si ~/.dotfiles/vim/vimrc ~/.vimrc
-    ln -si ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
-    ln -si ~/.dotfiles/bash/bash_profile ~/.bash_profile
-    mkdir ~/.bash
-    ln -si ~/.dotfiles/bash/bash.alias ~/.bash/bash.alias
-    ln -si ~/.dotfiles/git/gitconfig ~/.gitconfig
-    mkdir -p ~/.vim/bundle
-    git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
-    vim +BundleInstall +qa
+```
+git clone https://github.com/janoma/dotfiles $HOME/.dotfiles
+$HOME/.dotfiles/install
+```
 
 When you run `vim +BundleInstall +qa` the first time, it will complain that it
 doesn't find the `molokai` color scheme. Just ignore the message, since the
