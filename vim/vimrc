@@ -25,6 +25,9 @@ Bundle 'plasticboy/vim-markdown'
 " Syntax highlight for bison and flex
 Bundle 'justinmk/vim-syntax-extra'
 
+" Support for modern cmake syntax
+Bundle 'nickhutchinson/vim-cmake-syntax'
+
 filetype plugin indent on
 "
 " Brief help
@@ -46,8 +49,8 @@ set splitbelow
 " Show line numbers
 set number
 
-" Show at least 6 characters in width in line numbers
-set numberwidth=6
+" Show at least 4 characters in width in line numbers
+set numberwidth=4
 
 " A status line to my taste
 set statusline=%F%m%r%h%w\ (%{&ff}){%Y}\ [%l,%v][%p%%]
