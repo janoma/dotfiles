@@ -28,6 +28,9 @@ Bundle 'justinmk/vim-syntax-extra'
 " Support for modern cmake syntax
 Bundle 'nickhutchinson/vim-cmake-syntax'
 
+" Autocomplete in C++ and other goodies
+Bundle 'Valloric/YouCompleteMe'
+
 filetype plugin indent on
 "
 " Brief help
