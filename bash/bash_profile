@@ -4,6 +4,12 @@ export EDITOR=vim
 # Terminal prompt
 export PS1="\u@\h:\w\$ "
 
+# Displays date and time for history command
+export HISTTIMEFORMAT='%F %T '
+
+# Ignore duplicates in history
+export HISTCONTROL=ignoredups:erasedups
+
 # Aliases
 if [ -f ~/.bash/bash.alias ];
 then
