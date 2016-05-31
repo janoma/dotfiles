@@ -1,11 +1,18 @@
 alias tmux='tmux -2'
 alias less='less -R'
-alias ls='ls -G'
-alias l='ls -lG --color=auto'
-alias ll='ls -lG --color=auto | less -R'
-alias la='ls -lA --color=auto'
 alias rm='rm -i'
 alias cp='cp -i'
 alias vi='vim'
 alias man='man -a'
 alias cgdb='TERM=screen-256color;cgdb'
+
+if [[ ${OSTYPE//[0-9.]/} == 'darwin' ]];
+then
+    alias ls='ls -G'
+else
+    alias ls='ls --color=auto'
+fi
+
+alias l='ls -l'
+alias ll='l | less'
+alias la='l -A'
