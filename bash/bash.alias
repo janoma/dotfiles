@@ -16,3 +16,5 @@ fi
 alias l='ls -l'
 alias ll='l | less'
 alias la='l -A'
+
+# vim: set syntax=sh :

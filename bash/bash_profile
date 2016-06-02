@@ -21,3 +21,5 @@ if [ -f ~/.bash/bash_profile.local ];
 then
     source ~/.bash/bash_profile.local
 fi
+
+# vim: set syntax=sh :
