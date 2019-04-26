@@ -106,6 +106,9 @@ set shiftwidth=4
 set expandtab
 set smartindent
 
+" Don't fold
+set nofoldenable
+
 " Visually displays tabs and trailing whitespace
 set listchars=tab:▸-,trail:·
 set list
@@ -135,4 +138,4 @@ syntax on
 let g:ycm_extra_conf_globlist = ['~/dev/*']
 
 " Enable modeline for end-of-file vim settings
-set modeline
+set modelines=1
