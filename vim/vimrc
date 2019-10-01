@@ -134,8 +134,8 @@ set backspace=indent,eol,start
 syntax on
 
 " Let YouCompleteMe know that I don't want to confirm loading the
-" .ycm_extra_conf.py file every time in the ~/dev/ directory
-let g:ycm_extra_conf_globlist = ['~/dev/*']
+" .ycm_extra_conf.py file every time in the ~/workspace/ directory
+let g:ycm_extra_conf_globlist = ['~/workspace/*']
 
 " Enable modeline for end-of-file vim settings
 set modelines=1
