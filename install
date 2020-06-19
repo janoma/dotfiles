@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+ln -si $HOME/.dotfiles/bin $HOME/bin
 ln -si $HOME/.dotfiles/vim/vimrc $HOME/.vimrc
 ln -si $HOME/.dotfiles/tmux/tmux.conf $HOME/.tmux.conf
 ln -si $HOME/.dotfiles/bash/bash_profile $HOME/.bash_profile

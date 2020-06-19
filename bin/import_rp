@@ -1,0 +1,31 @@
+#/usr/bin/env bash
+
+MEDIA_DIR="/Volumes/EOS_DIGITAL/DCIM/*CANON"
+FOOTAGE_DIR="/Volumes/wolf02/Footage/RP"
+
+COUNTER=0
+
+for SOURCE in `ls $MEDIA_DIR/*.MP4 2> /dev/null`; do
+    ((COUNTER++))
+
+    DAY=$(stat -f "%SB" -t "%Y-%m-%d" $SOURCE)
+    DESTINATION="$FOOTAGE_DIR/$DAY/$(basename $SOURCE)"
+
+    mkdir -p $FOOTAGE_DIR/$DAY
+    cp $SOURCE $DESTINATION
+
+    # Compare the two files to see if the copy succeeded
+    if cmp -s "$SOURCE" "$DESTINATION"; then
+        # we can remove the original now
+        rm -f $SOURCE
+    else
+        echo "Failed copying $SOURCE ... will exit now"
+        exit 1
+    fi
+done
+
+if (( COUNTER == 0 )); then
+    echo "No files to import"
+else
+    echo "Successfully imported $COUNTER video files"
+fi
