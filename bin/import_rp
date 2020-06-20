@@ -29,3 +29,5 @@ if (( COUNTER == 0 )); then
 else
     echo "Successfully imported $COUNTER video files"
 fi
+
+# vim: set syntax=sh :
