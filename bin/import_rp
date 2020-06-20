@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 MEDIA_DIR="/Volumes/EOS_DIGITAL/DCIM/*CANON"
 FOOTAGE_DIR="/Volumes/wolf02/Footage/RP"
