@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-# Modify these to reflect your locations
+# Directory containing Resolve's databases
 DATABASES_DIR="/Volumes/media01/Resolve/Databases"
+
+# Directory to store the compressed database backups
 BACKUPS_DIR="/Volumes/wolf02/Backups/Resolve_Databases"
 
 # Remove backup files older than this number of days
