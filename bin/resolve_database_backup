@@ -13,6 +13,16 @@ KEEP_ALIVE=30
 # Do not modify after this #
 ############################
 
+if [ ! -d "$BACKUPS_DIR" ]; then
+    echo "Directory $BACKUPS_DIR doesn't exist!"
+    exit 1
+fi
+
+if [ ! -w "$BACKUPS_DIR" ]; then
+    echo "Directory $BACKUPS_DIR is not writable!"
+    exit 2
+fi
+
 BACKUP_FILENAME="Database_$(date +"%Y%m%d%H%M%S").tar.bz2"
 
 pushd $DATABASES_DIR/.. 1> /dev/null
