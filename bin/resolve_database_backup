@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Modify these to reflect your locations
+DATABASES_DIR="/Volumes/media01/Resolve/Databases"
+BACKUPS_DIR="/Volumes/wolf02/Backups/Resolve_Databases"
+
+# Remove backup files older than this number of days
+KEEP_ALIVE=30
+
+############################
+# Do not modify after this #
+############################
+
+BACKUP_FILENAME="Database_$(date +"%Y%m%d%H%M%S").tar.bz2"
+
+pushd $DATABASES_DIR/.. 1> /dev/null
+tar -cjf $BACKUPS_DIR/$BACKUP_FILENAME Databases
+popd
+
+# Remove backup files older than $KEEP_ALIVE days
+rm -f $(find $BACKUPS_DIR -maxdepth 1 -name "Database_[0-9]*\.tar\.bz2" -Btime +${KEEP_ALIVE}d)
+
+# vim: set syntax=sh :
