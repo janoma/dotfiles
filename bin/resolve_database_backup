@@ -13,23 +13,31 @@ KEEP_ALIVE=30
 # Do not modify after this #
 ############################
 
-if [ ! -d "$BACKUPS_DIR" ]; then
-    echo "Directory $BACKUPS_DIR doesn't exist!"
+BOLD="\033[1m"
+NORMAL="\033[0m"
+
+if [ ! -d "${DATABASES_DIR}" ]; then
+    echo -e "Directory ${BOLD}${DATABASES_DIR}${NORMAL} doesn't exist!"
     exit 1
 fi
 
-if [ ! -w "$BACKUPS_DIR" ]; then
-    echo "Directory $BACKUPS_DIR is not writable!"
+if [ ! -d "${BACKUPS_DIR}" ]; then
+    echo -e "Directory ${BOLD}${BACKUPS_DIR}${NORMAL} doesn't exist!"
+    exit 1
+fi
+
+if [ ! -w "${BACKUPS_DIR}" ]; then
+    echo -e "Directory ${BOLD}${BACKUPS_DIR}${NORMAL} is not writable!"
     exit 2
 fi
 
 BACKUP_FILENAME="Database_$(date +"%Y%m%d%H%M%S").tar.bz2"
 
-pushd $DATABASES_DIR/.. 1> /dev/null
-tar -cjf $BACKUPS_DIR/$BACKUP_FILENAME Databases
+pushd "${DATABASES_DIR}/.." 1> /dev/null
+tar -cjf "${BACKUPS_DIR}/${BACKUP_FILENAME}" Databases
 popd
 
 # Remove backup files older than $KEEP_ALIVE days
-rm -f $(find $BACKUPS_DIR -maxdepth 1 -name "Database_[0-9]*\.tar\.bz2" -Btime +${KEEP_ALIVE}d)
+rm -f $(find "${BACKUPS_DIR}" -maxdepth 1 -name "Database_[0-9]*\.tar\.bz2" -Btime +${KEEP_ALIVE}d)
 
-# vim: set syntax=sh :
+# vim: set syntax=sh formatoptions-=t :
