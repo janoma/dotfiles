@@ -23,12 +23,12 @@ fi
 
 if [ ! -d "${BACKUPS_DIR}" ]; then
     echo -e "Directory ${BOLD}${BACKUPS_DIR}${NORMAL} doesn't exist!"
-    exit 1
+    exit 2
 fi
 
 if [ ! -w "${BACKUPS_DIR}" ]; then
     echo -e "Directory ${BOLD}${BACKUPS_DIR}${NORMAL} is not writable!"
-    exit 2
+    exit 3
 fi
 
 BACKUP_FILENAME="Database_$(date +"%Y%m%d%H%M%S").tar.bz2"
