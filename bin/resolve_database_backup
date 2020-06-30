@@ -9,6 +9,9 @@ BACKUPS_DIR="/Volumes/wolf02/Backups/Resolve_Databases"
 # Remove backup files older than this number of days
 KEEP_ALIVE=30
 
+# Location of the "DaVinci Resolve.app" file
+RESOLVE_APP="/Applications/DaVinci\ Resolve/DaVinci\ Resolve.app"
+
 ############################
 # Do not modify after this #
 ############################
@@ -31,7 +34,8 @@ if [ ! -w "${BACKUPS_DIR}" ]; then
     exit 3
 fi
 
-BACKUP_FILENAME="Database_$(date +"%Y%m%d%H%M%S").tar.bz2"
+RESOLVE_VERSION=$(cat ${RESOLVE_APP}/Contents/Info.plist | grep -A1 CFBundleVersion | tail -1 | sed -n -e 's/^.*<string>\([0-9\.]*\)<\/string>/\1/p')
+BACKUP_FILENAME="Database_$(date +"%Y%m%d%H%M%S")_${RESOLVE_VERSION}.tar.bz2"
 
 pushd "${DATABASES_DIR}/.." 1> /dev/null
 tar -cjf "${BACKUPS_DIR}/${BACKUP_FILENAME}" Databases
