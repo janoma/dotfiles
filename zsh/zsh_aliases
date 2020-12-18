@@ -1,0 +1,20 @@
+alias tmux='tmux -2'
+alias less='less -R'
+alias rm='rm -i'
+alias cp='cp -i'
+alias vi='vim'
+alias man='man -a'
+alias cgdb='TERM=screen-256color;cgdb'
+
+if [[ "$(uname)" = 'Darwin' ]]; then
+    alias ls='ls -G'
+    alias ll='CLICOLOR_FORCE=true ls -lG | less -R'
+else
+    alias ls='ls --color=auto'
+    alias ll='ls -l --color=always | less -R'
+fi
+
+alias l='ls -l'
+alias la='l -A'
+
+# vim: set syntax=sh :
