@@ -17,4 +17,14 @@ fi
 alias l='ls -l'
 alias la='l -A'
 
+# Grab my IP
+alias myip="curl http://ipecho.net/plain; echo"
+
+# Disk usage of all files and directories in current directory.
+# Does not follow symbolic links
+alias usage="ls -l | \
+    grep \"^[d-]\" | \
+    awk '{print substr(\$0, index(\$0,\$9))}' | \
+    xargs -I {} du -hs \"{}\""
+
 # vim: set syntax=sh :
