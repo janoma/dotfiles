@@ -98,3 +98,6 @@ if [ -f $HOME/.zsh/zsh_profile.local ];
 then
     . $HOME/.zsh/zsh_profile.local
 fi
+
+# Uses option+tab to accept the current suggestion
+bindkey '^[^I' autosuggest-accept
