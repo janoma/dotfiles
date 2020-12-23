@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
-ln -si $HOME/.dotfiles/bin $HOME/bin
-ln -si $HOME/.dotfiles/vim/vimrc $HOME/.vimrc
-ln -si $HOME/.dotfiles/tmux/tmux.conf $HOME/.tmux.conf
-ln -si $HOME/.dotfiles/bash/bash_profile $HOME/.bash_profile
-mkdir $HOME/.bash
-ln -si $HOME/.dotfiles/bash/bash.alias $HOME/.bash/bash.alias
-ln -si $HOME/.dotfiles/git/gitconfig $HOME/.gitconfig
-mkdir -p $HOME/.vim/bundle
-git clone https://github.com/gmarik/vundle.git $HOME/.vim/bundle/vundle
+git clone https://github.com/janoma/dotfiles ~/.dotfiles
+ln -si ~/.dotfiles/bin ~/bin
+ln -si ~/.dotfiles/vim/vimrc ~/.vimrc
+ln -si ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
+ln -si ~/.dotfiles/bash/bash_profile ~/.bash_profile
+ln -si ~/.dotfiles/git/gitconfig ~/.gitconfig
+mkdir -p ~/.vim/bundle
+git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 vim +BundleInstall +qa
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+ln -si ~/.dotfiles/zsh/p10k.zsh ~/.p10k.zsh
+ln -si ~/.dotfiles/zsh/zshrc ~/.zshrc
+brew install htop ripgrep tmux wget zsh-autosuggestions zsh-syntax-highlighting
+brew tap beeftornado/rmtree
