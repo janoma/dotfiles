@@ -5,7 +5,7 @@ A set of basic, common settings for my \*nix environment.
 ## Installation
 
 ```sh
-git clone https://github.com/janoma/dotfiles $HOME/.dotfiles
+git clone https://github.com/janoma/dotfiles ~/.dotfiles
 ~/.dotfiles/install
 ```
 
