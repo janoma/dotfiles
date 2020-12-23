@@ -8,9 +8,12 @@
     graph = log --graph --decorate --oneline --all
     dag = log --graph --format='format:%C(yellow)%h%C(reset) %C(blue)\"%an\" <%ae>%C(reset) %C(magenta)%cr%C(reset)%C(auto)%d%C(reset)%n%s' --date-order
 [user]
-    name = Alejandro Mallea
-    email = janoma@gmail.com
+	name = Alejandro Mallea
+	email = amallea@evernote.com
 [push]
     default = simple
 [core]
     pager = less -FMRiX
+	precomposeUnicode = true
+[var]
+	projectsDirectory = /Users/amallea/projects/evernote

@@ -75,7 +75,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git kube-ps1 web-search extract history yarn iterm2 z zsh-autosuggestions autojump colored-man-pages zsh-syntax-highlighting)
+plugins=(git kube-ps1 web-search extract history yarn iterm2 z colored-man-pages)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -101,3 +101,7 @@ fi
 
 # Uses option+tab to accept the current suggestion
 bindkey '^[^I' autosuggest-accept
+
+# Plugins installed with brew. Note that zsh-syntax-highlighting goes at the end
+source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
