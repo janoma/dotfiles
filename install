@@ -1,18 +1,42 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
+autoload colors; colors
+
+echo "Cloning $fg[green]dotfiles${reset_color}..."
 git clone https://github.com/janoma/dotfiles ~/.dotfiles
-ln -si ~/.dotfiles/bin ~/bin
-ln -si ~/.dotfiles/vim/vimrc ~/.vimrc
+
+echo "Configuring $fg[green]tmux${reset_color}..."
 ln -si ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
-ln -si ~/.dotfiles/bash/bash_profile ~/.bash_profile
+
+echo "Configuring $fg[green]git${reset_color}..."
 ln -si ~/.dotfiles/git/gitconfig ~/.gitconfig
+
+echo "Configuring $fg[green]vim${reset_color}..."
+ln -si ~/.dotfiles/vim/vimrc ~/.vimrc
 mkdir -p ~/.vim/bundle
 git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 vim +BundleInstall +qa
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-ln -si ~/.dotfiles/zsh/p10k.zsh ~/.p10k.zsh
-ln -si ~/.dotfiles/zsh/zshrc ~/.zshrc
+
+echo "Installing $fg[green]brew${reset_color}..."
+if [ ! command -v brew &> /dev/null ];
+then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi;
+
+echo "Installing $fg[green]basic packages${reset_color}..."
 brew install htop ripgrep tmux wget zsh-autosuggestions zsh-syntax-highlighting
 brew tap beeftornado/rmtree
+
+echo "Installing $fg[green]oh-my-zsh${reset_color}..."
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+echo "Installing $fg[green]powerlevel10k${reset_color}..."
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+
+echo "Configuring $fg[green]powerlevel10k${reset_color}..."
+ln -si ~/.dotfiles/zsh/p10k.zsh ~/.p10k.zsh
+
+echo "Configuring $fg[green]zsh${reset_color}..."
+ln -si ~/.dotfiles/zsh/zshrc ~/.zshrc
+
+echo "$fg[green]Done!${reset_color} Enjoy your zsh"

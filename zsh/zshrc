@@ -91,12 +91,12 @@ export EDITOR='vim'
 bindkey -v
 
 # my own aliases, this file *should* exist
-[[ -f $HOME/.zsh/zsh_aliases ]] && . $HOME/.zsh/zsh_aliases
+[[ -f ~/.dotfiles/zsh/zsh_aliases ]] && . ~/.dotfiles/zsh/zsh_aliases
 
 # Local configuration, file doesn't necessarily exist
-if [ -f $HOME/.zsh/zsh_profile.local ];
+if [ -f ~/.zsh/zsh_profile.local ];
 then
-    . $HOME/.zsh/zsh_profile.local
+    . ~/.zsh/zsh_profile.local
 fi
 
 # Uses option+tab to accept the current suggestion
