@@ -19,5 +19,5 @@ Not needed everywhere, so I install these as I need them. Just keeping them here
 as a reminder.
 
 ```sh
-brew install ant cgdb cmake gcc lame ffmpeg maven node nvm openssl watch x264 x265 yarn
+brew install ant cgdb cmake gcc gnu-chess lame ffmpeg maven node nvm openssl watch x264 x265 yarn
 ```
