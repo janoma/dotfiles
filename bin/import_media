@@ -164,7 +164,7 @@ for source_file in $(eval $query); do
         >&2 echo "$fg[red]Failed copying $source_file ... will exit now${reset_color}"
         exit 2
     fi
-done # 2> /dev/null
+done
 
 if (( counter == 0 )); then
     echo "No files to import"
