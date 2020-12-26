@@ -1,0 +1,173 @@
+#!/bin/zsh
+
+autoload colors; colors
+
+usage()
+{
+    cat <<-END
+$1: copy selected media to permanent storage, organizing by date
+
+usage: $1 -s source -d destination [--force|-f] [--keep|-k] [--trash|-t] -e ext1 -e ext2...
+  options:
+    --source, -s       The path where the source media is.
+    --destination, -d  The path where the media is to be moved to.
+    --force, -f        Forces overwriting existing files.
+    --trash, -t        Sends files to the trash instead of using rm (if -k is not used).
+    --keep, -k         Keeps the original files (does not delete them).
+    --verbose, -v      Lists all files being copied.
+    --extension, -e    Which extensions to look for in the source directory.
+    --help, -h         Display this help and exit.
+
+  This utility can be used to copy any group of files between different directories, but
+  its original intention is to copy large video files from memory cards from cameras to
+  their permanent storage.
+
+  The program will generate a directory named YYYY-MM-DD for each corresponding date in
+  the files that are being copied, and place the files accordingly. For example, if a card
+  contains the files
+
+      MY_CARD/DCIM/
+          +-- 100CANON
+          |       MVI_0178.MP4    # Recorded on Sep 21, 2020
+          |       MVI_0179.MP4    # Recorded on Sep 21, 2020
+          |       MVI_0180.MP4    # Recorded on Oct 7, 2020
+          +-- 101CANON
+          |       MVI_0212.MP4    # Recorded on Oct 7, 2020
+          |       MVI_0214.MP4    # Recorded on Oct 10, 2020
+
+  then importing from MY_CARD to MY_HARD_DRIVE/Footage will produce the following structure:
+
+      MY_HARD_DRIVE/Footage/
+          +-- 2020-09-21
+          |       MVI_0178.MP4
+          |       MVI_0179.MP4
+          +-- 2020-10-07
+          |       MVI_0180.MP4
+          |       MVI_0212.MP4
+          +-- 2020-10-10
+          |       MVI_0214.MP4
+
+  sample usage:
+    Copy all .MP4 and .MOV files from SD card named 'MY_CAMERA' to ~/Videos
+    and don't delete them from there:
+
+    $1 -s /Volumes/MY_CAMERA/DCIM/*CANON -d ~/Videos --keep -e MP4 -e MOV
+END
+}
+
+# See https://stackoverflow.com/a/20369590 for source
+spinner()
+{
+    local pid=$!
+    local delay=0.125
+    local spinstr='|/-\'
+    tput civis # hide cursor
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "%c" "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b"
+    done
+    tput cnorm # show cursor again
+}
+
+zparseopts -E -D \
+    s:=o_source \
+    -source:=o_source \
+    d:=o_dest \
+    -destination:=o_dest \
+    e+:=o_ext \
+    -extension+:=o_ext \
+    f=o_force \
+    -force=o_force \
+    t=o_trash \
+    -trash=o_trash \
+    k=o_keep \
+    -keep=o_keep \
+    v=o_verbose \
+    -verbose=o_verbose \
+    h=o_help \
+    -help=o_help
+
+if [[ -n "$o_help[1]" ]]; then
+    usage $(basename $0)
+    exit
+fi
+
+# Check we actually have a source directory
+source_dir=$o_source[2]
+if [[ ! -d "$source_dir" ]]; then
+    echo "not a directory: $source_dir"
+    exit 3
+fi
+
+# Check we actually have a destination directory
+dest_dir=$o_dest[2]
+if [[ ! -d "$dest_dir" ]]; then
+    echo "not a directory: $dest_dir"
+    exit 4
+fi
+
+[[ -z "$o_force" ]] && cp_cmd='cp -i' || cp_cmd='cp -f'
+
+# See if we have to use `rm` or `trash`
+rm_cmd="rm -f"
+if [[ ! -z "$o_trash" ]]; then
+    if ! type "trash" &> /dev/null; then
+        echo "You don't have the 'trash' command. Trying to install it..."
+        if ! type "brew" &> /dev/null; then
+            echo "You also don't have brew. Install it from https://brew.sh"
+            exit 10
+        fi
+        brew install trash 2>&1 /dev/null
+        if ! type "trash" &> /dev/null; then
+            echo "Failed to install 'trash'."
+            exit 11
+        fi
+    fi
+    rm_cmd="trash"
+fi
+
+# Create the types argument to pass to find
+extensions=""
+for k ext in "${(@)o_ext}"; do
+    extensions+="|$ext"
+done
+extensions=$(echo $extensions | cut -d '|' -f2-)
+
+query="find $source_dir/**/*\\.($extensions)(.)"
+
+counter=0
+for source_file in $(eval $query); do
+    ((counter++))
+
+    day=$(stat -f "%SB" -t "%Y-%m-%d" $source_file)
+    dest_file="$dest_dir/$day/$(basename $source_file)"
+
+    mkdir -p "$dest_dir/$day"
+    if [[ ! -z "$o_verbose" ]]; then
+        echo -n "Copying $fg[green]$(basename $source_file)${reset_color} to $dest_file ... "
+    fi
+    eval "$cp_cmd $source_file $dest_file" & spinner
+    if [[ ! -z "$o_verbose" ]]; then
+        echo "$fg[green]done!${reset_color}"
+    fi
+
+    # Compare the two files to see if the copy succeeded
+    if cmp -s "$source_file" "$dest_file"; then
+        # we can remove the original now
+        if [[ -z "$o_keep" ]]; then
+            eval "$rm_cmd $source_file"
+        fi
+    else
+        >&2 echo "$fg[red]Failed copying $source_file ... will exit now${reset_color}"
+        exit 2
+    fi
+done # 2> /dev/null
+
+if (( counter == 0 )); then
+    echo "No files to import"
+else
+    echo "Successfully imported $counter files"
+fi
