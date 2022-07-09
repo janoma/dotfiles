@@ -4,7 +4,7 @@
 DATABASES_DIR="/Volumes/media01/Resolve/Databases"
 
 # Directory to store the compressed database backups
-BACKUPS_DIR="/Volumes/wolf02/Backups/Resolve_Databases"
+BACKUPS_DIR="/Volumes/wolf04/Backups/Resolve_Databases"
 
 # Remove backup files older than this number of days
 KEEP_ALIVE=30
