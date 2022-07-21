@@ -27,4 +27,7 @@ alias usage="ls -l | \
     awk '{print substr(\$0, index(\$0,\$9))}' | \
     xargs -I {} du -hs \"{}\""
 
+# Retrieve the name of the current git branch
+alias br='git rev-parse --abbrev-ref HEAD'
+
 # vim: set syntax=sh :
