@@ -1,5 +1,5 @@
 alias tmux='tmux -2'
-alias less='less -R'
+alias less='less -r'
 alias rm='rm -i'
 alias cp='cp -i'
 alias vi='vim'
