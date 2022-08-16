@@ -25,7 +25,7 @@ then
 fi;
 
 echo "Installing $fg[green]basic packages${reset_color}..."
-brew install htop reattach-to-user-namespace ripgrep stockfish tmux tmuxinator wget zsh-autosuggestions zsh-syntax-highlighting
+brew install htop ripgrep tmux tmuxinator wget zsh-autosuggestions zsh-syntax-highlighting trash ffmpeg
 brew tap beeftornado/rmtree
 
 echo "Installing $fg[green]oh-my-zsh${reset_color}..."
@@ -39,8 +39,5 @@ ln -si ~/.dotfiles/zsh/p10k.zsh ~/.p10k.zsh
 
 echo "Configuring $fg[green]zsh${reset_color}..."
 ln -si ~/.dotfiles/zsh/zshrc ~/.zshrc
-
-echo "Installing $fg[green]iStats${reset_color} (requires sudo)..."
-sudo gem install iStats
 
 echo "$fg[green]Done!${reset_color} Enjoy your zsh"
