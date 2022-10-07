@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # Directory containing Resolve's databases
-DATABASES_DIR="/Volumes/media01/Resolve/Databases"
+DATABASES_DIR="/Volumes/Macintosh HD/Users/janoma/Projects/Databases"
 
 # Directory to store the compressed database backups
-BACKUPS_DIR="/Volumes/wolf04/Backups/Resolve_Databases"
+BACKUPS_DIR="/Volumes/Library/Backups/Resolve_Databases"
 
 # Remove backup files older than this number of days
 KEEP_ALIVE=30
