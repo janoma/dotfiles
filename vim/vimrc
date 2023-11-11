@@ -94,8 +94,12 @@ set ignorecase
 set smartcase
 
 " Wrap lines after 80 characters
-set textwidth=80
-set formatoptions+=rn
+" set textwidth=80
+" set formatoptions+=rn
+set formatoptions-=t
+
+" Allow paste by default
+set paste
 
 " Tab options
 set tabstop=4
