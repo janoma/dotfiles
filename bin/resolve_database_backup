@@ -41,6 +41,7 @@ pushd "${DATABASES_DIR}/.." 1> /dev/null
 tar -cjf "${BACKUPS_DIR}/${BACKUP_FILENAME}" Databases
 popd
 
+# Remove backup files older than the given number of days
 rm -f $(find "${BACKUPS_DIR}" -maxdepth 1 -name "Database_[0-9]*\.tar\.bz2" -Btime +${KEEP_ALIVE}d)
 
 # vim: set syntax=sh formatoptions-=t :
