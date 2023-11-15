@@ -14,10 +14,18 @@ doesn't find the `molokai` color scheme. Just ignore the message, since the
 corresponding package will be downloaded with that command and be available
 afterwards.
 
+### Font
+Download and install `MesloLGS NF` font from Powerlevel10k.
+
+### Packages I use
+```sh
+brew install wget ripgrep htop ffmpeg nvm openssl zsh-autosuggestions zsh-syntax-highlighting
+```
+
 ### Optional packages
 Not needed everywhere, so I install these as I need them. Just keeping them here
 as a reminder.
 
 ```sh
-brew install ant cgdb cmake gcc gnu-chess lame ffmpeg maven node nvm openssl watch x264 x265 yarn
+brew install lame flac x264 x265 gcc cgdb nginx pyenv
 ```
