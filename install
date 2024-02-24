@@ -25,7 +25,7 @@ then
 fi;
 
 echo "Installing $fg[green]basic packages${reset_color}..."
-brew install htop ripgrep tmux tmuxinator wget zsh-autosuggestions zsh-syntax-highlighting trash ffmpeg
+brew install htop dirname nvm openssl ripgrep tmux tmuxinator wget zsh-autosuggestions zsh-syntax-highlighting trash ffmpeg
 brew tap beeftornado/rmtree
 
 echo "Installing $fg[green]oh-my-zsh${reset_color}..."
