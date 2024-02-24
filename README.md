@@ -19,7 +19,7 @@ Download and install `MesloLGS NF` font from Powerlevel10k.
 
 ### Packages I use
 ```sh
-brew install wget ripgrep htop ffmpeg nvm openssl zsh-autosuggestions zsh-syntax-highlighting
+brew install wget dirname trash ripgrep htop ffmpeg nvm openssl zsh-autosuggestions zsh-syntax-highlighting
 ```
 
 ### Optional packages
