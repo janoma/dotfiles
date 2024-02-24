@@ -5,8 +5,7 @@ A set of basic, common settings for my \*nix environment.
 ## Installation
 
 ```sh
-git clone https://github.com/janoma/dotfiles ~/.dotfiles
-~/.dotfiles/install
+git clone https://github.com/janoma/dotfiles ~/.dotfiles --recurse-submodules && ~/.dotfiles/install
 ```
 
 When you run `vim +BundleInstall +qa` the first time, it will complain that it
