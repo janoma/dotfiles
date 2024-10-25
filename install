@@ -27,6 +27,7 @@ fi;
 echo "Installing $fg[green]basic packages${reset_color}..."
 brew install htop dirname nvm openssl ripgrep tmux tmuxinator wget zsh-autosuggestions zsh-syntax-highlighting trash ffmpeg
 brew tap beeftornado/rmtree
+brew install --cask notunes
 
 echo "Installing $fg[green]oh-my-zsh${reset_color}..."
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
