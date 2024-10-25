@@ -30,4 +30,9 @@ alias usage="ls -l | \
 # Retrieve the name of the current git branch
 alias br='git rev-parse --abbrev-ref HEAD'
 
+# npm run *
+alias nrb='npm run build'
+alias nrl='npm run lint'
+alias nrt='npm run test'
+
 # vim: set syntax=sh :
