@@ -94,9 +94,9 @@ bindkey -v
 [[ -f ~/.dotfiles/zsh/zsh_aliases ]] && . ~/.dotfiles/zsh/zsh_aliases
 
 # Local configuration, file doesn't necessarily exist
-if [ -f ~/.zsh/zsh_profile.local ];
+if [ -f ~/.dotfiles/zsh/zsh_profile.local ];
 then
-    . ~/.zsh/zsh_profile.local
+    . ~/.dotfiles/zsh/zsh_profile.local
 fi
 
 # Uses option+tab to accept the current suggestion
