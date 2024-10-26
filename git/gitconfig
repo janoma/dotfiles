@@ -16,4 +16,4 @@
     pager = less -FMRiX
     precomposeUnicode = true
 [pull]
-	rebase = true
+    rebase = true
