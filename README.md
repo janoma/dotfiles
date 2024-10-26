@@ -1,11 +1,11 @@
 # dotfiles
-A set of basic, common settings for my \*nix environment.
 
+A set of basic, common settings for my \*nix environment.
 
 ## Installation
 
 ```sh
-git clone https://github.com/janoma/dotfiles ~/.dotfiles --recurse-submodules && ~/.dotfiles/install
+git clone git@github.com:janoma/dotfiles.git ~/.dotfiles && ~/.dotfiles/install
 ```
 
 When you run `vim +BundleInstall +qa` the first time, it will complain that it
@@ -14,14 +14,17 @@ corresponding package will be downloaded with that command and be available
 afterwards.
 
 ### Font
+
 Download and install `MesloLGS NF` font from Powerlevel10k.
 
 ### Packages I use
+
 ```sh
-brew install wget dirname trash ripgrep htop ffmpeg nvm openssl zsh-autosuggestions zsh-syntax-highlighting
+brew install wget direnv trash ripgrep htop ffmpeg nvm openssl zsh-autosuggestions zsh-syntax-highlighting
 ```
 
 ### Optional packages
+
 Not needed everywhere, so I install these as I need them. Just keeping them here
 as a reminder.
 
