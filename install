@@ -33,8 +33,7 @@ brew install htop \
              tmux \
              tmuxinator \
              wget \
-             zsh \
-             autosuggestions \
+             zsh-autosuggestions \
              zsh-syntax-highlighting \
              trash \
              ffmpeg \
