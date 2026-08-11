@@ -102,6 +102,9 @@ fi
 # Uses option+tab to accept the current suggestion
 bindkey '^[^I' autosuggest-accept
 
+# Reverse incremental search (re-bind because of vi mode)
+bindkey '^R' history-incremental-search-backward
+
 # Plugins installed with brew. Note that zsh-syntax-highlighting goes at the end
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
