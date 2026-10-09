@@ -133,6 +133,7 @@ set backspace=indent,eol,start
 
 " Syntax highlight on by default!
 syntax on
+set re=0
 
 " Enable modeline for end-of-file vim settings
 set modelines=1
