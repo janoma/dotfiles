@@ -37,4 +37,6 @@ alias nrt='npm run test'
 
 alias gg='git graph'
 
+alias uuid="uuidgen | tr '[:upper:]' '[:lower:]' | tr -d '\n'"
+
 # vim: set syntax=sh :
