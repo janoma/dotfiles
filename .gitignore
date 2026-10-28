@@ -1,2 +1,4 @@
 .DS_Store
 zsh/zsh_profile.local
+__pycache__/
+*.pyc
