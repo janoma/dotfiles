@@ -18,6 +18,8 @@ Install:
     brew install yt-dlp
 
 Set YOUTUBE_API_KEY to a YouTube Data API key. Titles are not sent to Google.
+Each video resource returned by the API is cached in
+~/.cache/youtube-remux/videos.json and reused on later runs.
 """
 
 import argparse
@@ -320,34 +322,113 @@ def read_comment(path: Path) -> str:
     return ""
 
 
-def fetch_published_dates(video_ids: list[str], api_key: str) -> dict[str, datetime]:
-    """Look up snippet.publishedAt for video ids, in batches of 50."""
-    published: dict[str, datetime] = {}
+def fetch_published_dates(
+    video_ids: list[str],
+    api_key: str,
+    cache_path: Path | None = None,
+) -> dict[str, datetime]:
+    """Look up snippet.publishedAt for video ids, in batches of 50.
+
+    The full video resource from each API response is stored in cache_path,
+    keyed by video id. Later runs reuse that file and only request ids that
+    are missing.
+    """
+    path = _default_video_cache_path() if cache_path is None else cache_path
+    cache = _load_video_cache(path)
     unique = list(dict.fromkeys(video_ids))
-    for start in range(0, len(unique), API_BATCH_SIZE):
-        chunk = unique[start:start + API_BATCH_SIZE]
-        params = urllib.parse.urlencode({
-            "part": "snippet",
-            "id": ",".join(chunk),
-            "key": api_key,
-        })
-        url = f"https://www.googleapis.com/youtube/v3/videos?{params}"
-        request = urllib.request.Request(url)
-        try:
-            with urllib.request.urlopen(request, timeout=30) as response:
-                payload = json.load(response)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace").strip()
-            raise SystemExit(f"YouTube API error {exc.code}: {detail}") from exc
-        except urllib.error.URLError as exc:
-            raise SystemExit(f"YouTube API request failed: {exc.reason}") from exc
-        for item in payload.get("items", []):
-            video_id = item.get("id")
-            raw = ((item.get("snippet") or {}).get("publishedAt"))
-            if not video_id or not raw:
-                continue
-            published[video_id] = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    missing = [video_id for video_id in unique if video_id not in cache]
+    if missing:
+        cached_count = len(unique) - len(missing)
+        if cached_count:
+            print(f"Requesting YouTube data for {len(missing)} videos ({cached_count} cached).")
+        for start in range(0, len(missing), API_BATCH_SIZE):
+            chunk = missing[start:start + API_BATCH_SIZE]
+            payload = _request_videos(chunk, api_key)
+            for item in payload.get("items", []):
+                if not isinstance(item, dict):
+                    continue
+                video_id = item.get("id")
+                if isinstance(video_id, str) and video_id:
+                    cache[video_id] = item
+            _save_video_cache(path, cache)
+    elif unique:
+        print(f"Using cached YouTube data for {len(unique)} videos.")
+
+    published: dict[str, datetime] = {}
+    for video_id in unique:
+        moment = _published_at(cache.get(video_id))
+        if moment is not None:
+            published[video_id] = moment
     return published
+
+
+def _default_video_cache_path() -> Path:
+    return Path.home() / ".cache" / "youtube-remux" / "videos.json"
+
+
+def _load_video_cache(path: Path) -> dict[str, dict]:
+    """Return the video-id map, or an empty map when the file is missing."""
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Warning: ignoring YouTube cache {path}: {exc}", file=sys.stderr)
+        return {}
+    if not isinstance(payload, dict):
+        print(f"Warning: ignoring YouTube cache {path}: expected a JSON object.", file=sys.stderr)
+        return {}
+    return {
+        key: value
+        for key, value in payload.items()
+        if isinstance(key, str) and isinstance(value, dict)
+    }
+
+
+def _save_video_cache(path: Path, cache: dict[str, dict]) -> None:
+    """Write the cache atomically. A failure leaves any previous file in place."""
+    temporary = path.with_suffix(".json.tmp")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary.write_text(
+            json.dumps(cache, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(path)
+    except OSError as exc:
+        temporary.unlink(missing_ok=True)
+        print(f"Warning: could not write YouTube cache {path}: {exc}", file=sys.stderr)
+
+
+def _request_videos(video_ids: list[str], api_key: str) -> dict:
+    """Return the parsed videos.list response for these ids."""
+    params = urllib.parse.urlencode({
+        "part": "snippet",
+        "id": ",".join(video_ids),
+        "key": api_key,
+    })
+    url = f"https://www.googleapis.com/youtube/v3/videos?{params}"
+    request = urllib.request.Request(url)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            payload = json.load(response)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace").strip()
+        raise SystemExit(f"YouTube API error {exc.code}: {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise SystemExit(f"YouTube API request failed: {exc.reason}") from exc
+    if not isinstance(payload, dict):
+        raise SystemExit("YouTube API returned a response that is not a JSON object.")
+    return payload
+
+
+def _published_at(item: dict | None) -> datetime | None:
+    if not isinstance(item, dict):
+        return None
+    raw = ((item.get("snippet") or {}).get("publishedAt"))
+    if not isinstance(raw, str) or not raw:
+        return None
+    return datetime.fromisoformat(raw.replace("Z", "+00:00"))
 
 
 def prepare_output_directory(path: Path) -> Path:
