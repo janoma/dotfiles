@@ -6,7 +6,7 @@ For each video in a directory, this script:
 2. Looks up the publish date with the YouTube Data API.
 3. Builds an ASCII title from the filename.
 4. Downloads one subtitle track per requested language.
-5. Writes a new MP4 beside the original. The original stays in place.
+5. Writes a new MP4 in the output directory. The original stays in place.
 
 Uploader-provided subtitles are preferred over automatic captions. A locale
 such as en-US is only used to find a track. The MP4 stores the ISO 639-2
@@ -350,6 +350,20 @@ def fetch_published_dates(video_ids: list[str], api_key: str) -> dict[str, datet
     return published
 
 
+def prepare_output_directory(path: Path) -> Path:
+    """Create the output directory, or exit if it already contains anything."""
+    if path.exists():
+        if not path.is_dir():
+            print(f"Warning: output path is not a directory: {path}", file=sys.stderr)
+            sys.exit(1)
+        if any(path.iterdir()):
+            print(f"Warning: output directory is not empty: {path}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        path.mkdir(parents=True)
+    return path
+
+
 def claim_destination(
     directory: Path,
     day: str,
@@ -588,6 +602,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Directory of video files. Subdirectories are not scanned.",
     )
     parser.add_argument(
+        "--output", "-o",
+        type=Path,
+        help="Directory for the MP4 files. Created if missing. Default: DIRECTORY.out.",
+    )
+    parser.add_argument(
         "--encode",
         action="store_true",
         help="Encode video as libx265 CRF 20 ultrafast (hvc1). Audio is copied.",
@@ -614,6 +633,8 @@ def main(argv: list[str] | None = None) -> None:
     directory = args.directory
     if not directory.is_dir():
         sys.exit(f"Not a directory: {directory}")
+    output = prepare_output_directory(args.output or Path(f"{directory}.out"))
+    print(f"Output directory: {output}")
 
     languages = parse_languages(args.lang)
     paths = list_videos(directory)
@@ -652,7 +673,7 @@ def main(argv: list[str] | None = None) -> None:
             print(f"Warning: {path.name}: no publish date for {video_id}, skipping.", file=sys.stderr)
             continue
         title = strip_title(path.stem) or video_id
-        dest = claim_destination(directory, local_calendar_date(moment), title, video_id, claimed)
+        dest = claim_destination(output, local_calendar_date(moment), title, video_id, claimed)
         if dest is None:
             print(f"Warning: {path.name}: output already exists, skipping.", file=sys.stderr)
             continue
