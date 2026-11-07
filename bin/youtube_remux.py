@@ -20,10 +20,16 @@ Install:
 Set YOUTUBE_API_KEY to a YouTube Data API key. Titles are not sent to Google.
 Each video resource returned by the API is cached in
 ~/.cache/youtube-remux/videos.json and reused on later runs.
+
+--log-level is quiet by default: a progress bar and warnings only. info adds
+the per-video lines. verbose also prints the publish time and the subtitle
+tracks found for each video. The bar stays on the last row of the terminal.
 """
 
 import argparse
+import atexit
 import json
+import logging
 import os
 import re
 import shutil
@@ -36,12 +42,22 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NamedTuple
 
 try:
     from unidecode import unidecode
 except ImportError:  # pragma: no cover - exercised only when the package is missing
     unidecode = None
 
+
+VERBOSE = 15
+logging.addLevelName(VERBOSE, "VERBOSE")
+log = logging.getLogger("youtube_remux")
+_LOG_LEVELS = {
+    "quiet": logging.WARNING,
+    "info": logging.INFO,
+    "verbose": VERBOSE,
+}
 
 VIDEO_EXTENSIONS = {".mkv", ".mp4", ".webm", ".mov", ".m4v", ".avi"}
 API_BATCH_SIZE = 50
@@ -251,7 +267,7 @@ def parse_languages(spec: str) -> list[str]:
             continue
         base = token.split("-", 1)[0].strip().lower()
         if not re.fullmatch(r"[a-z]{2,3}", base):
-            print(f"Warning: ignoring subtitle locale {token!r}.", file=sys.stderr)
+            log.warning("Warning: ignoring subtitle locale %r.", token)
             continue
         if base in seen:
             continue
@@ -340,7 +356,11 @@ def fetch_published_dates(
     if missing:
         cached_count = len(unique) - len(missing)
         if cached_count:
-            print(f"Requesting YouTube data for {len(missing)} videos ({cached_count} cached).")
+            log.info(
+                "Requesting YouTube data for %s videos (%s cached).",
+                len(missing),
+                cached_count,
+            )
         for start in range(0, len(missing), API_BATCH_SIZE):
             chunk = missing[start:start + API_BATCH_SIZE]
             payload = _request_videos(chunk, api_key)
@@ -352,7 +372,7 @@ def fetch_published_dates(
                     cache[video_id] = item
             _save_video_cache(path, cache)
     elif unique:
-        print(f"Using cached YouTube data for {len(unique)} videos.")
+        log.info("Using cached YouTube data for %s videos.", len(unique))
 
     published: dict[str, datetime] = {}
     for video_id in unique:
@@ -373,10 +393,10 @@ def _load_video_cache(path: Path) -> dict[str, dict]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        print(f"Warning: ignoring YouTube cache {path}: {exc}", file=sys.stderr)
+        log.warning("Warning: ignoring YouTube cache %s: %s", path, exc)
         return {}
     if not isinstance(payload, dict):
-        print(f"Warning: ignoring YouTube cache {path}: expected a JSON object.", file=sys.stderr)
+        log.warning("Warning: ignoring YouTube cache %s: expected a JSON object.", path)
         return {}
     return {
         key: value
@@ -397,7 +417,7 @@ def _save_video_cache(path: Path, cache: dict[str, dict]) -> None:
         temporary.replace(path)
     except OSError as exc:
         temporary.unlink(missing_ok=True)
-        print(f"Warning: could not write YouTube cache {path}: {exc}", file=sys.stderr)
+        log.warning("Warning: could not write YouTube cache %s: %s", path, exc)
 
 
 def _request_videos(video_ids: list[str], api_key: str) -> dict:
@@ -435,10 +455,10 @@ def prepare_output_directory(path: Path) -> Path:
     """Create the output directory, or exit if it already contains anything."""
     if path.exists():
         if not path.is_dir():
-            print(f"Warning: output path is not a directory: {path}", file=sys.stderr)
+            log.warning("Warning: output path is not a directory: %s", path)
             sys.exit(1)
         if any(path.iterdir()):
-            print(f"Warning: output directory is not empty: {path}", file=sys.stderr)
+            log.warning("Warning: output directory is not empty: %s", path)
             sys.exit(1)
     else:
         path.mkdir(parents=True)
@@ -462,26 +482,33 @@ def claim_destination(
     return dest
 
 
+class SubtitleTrack(NamedTuple):
+    path: Path
+    language: str
+    source: str
+
+
 def download_subtitles(
     video_id: str,
     languages: list[str],
     tmp: Path,
     ytdlp: str,
-) -> list[tuple[Path, str]]:
+) -> list[SubtitleTrack]:
     """Download one SRT per language. Manual tracks win over automatic ones."""
-    selected: list[tuple[Path, str]] = []
+    selected: list[SubtitleTrack] = []
     for language in languages:
-        path = _download_language(video_id, language, tmp / language, ytdlp)
-        if path is None:
-            print(f"  no {language} subtitles")
+        found = _download_language(video_id, language, tmp / language, ytdlp)
+        if found is None:
+            log.info("  no %s subtitles", language)
             continue
-        selected.append((path, language))
+        path, source = found
+        selected.append(SubtitleTrack(path, language, source))
     return selected
 
 
 def build_ffmpeg_command(
     src: Path,
-    subtitles: list[tuple[Path, str]],
+    subtitles: list[SubtitleTrack],
     dest: Path,
     encode: bool,
 ) -> list[str]:
@@ -491,8 +518,8 @@ def build_ffmpeg_command(
     encoded as mov_text and tagged with the base language code.
     """
     command = ["ffmpeg", "-y", "-nostdin", "-i", str(src)]
-    for subtitle, _language in subtitles:
-        command.extend(["-i", str(subtitle)])
+    for track in subtitles:
+        command.extend(["-i", str(track.path)])
     command.extend(["-map", "0:v", "-map", "0:a?"])
     for index in range(len(subtitles)):
         command.extend(["-map", f"{index + 1}:0"])
@@ -504,8 +531,8 @@ def build_ffmpeg_command(
     if subtitles:
         command.extend(["-c:s", "mov_text"])
     command.extend(["-map_metadata", "0"])
-    for index, (_subtitle, language) in enumerate(subtitles):
-        command.extend([f"-metadata:s:s:{index}", f"language={_mp4_language(language)}"])
+    for index, track in enumerate(subtitles):
+        command.extend([f"-metadata:s:s:{index}", f"language={_mp4_language(track.language)}"])
     # The temporary path ends in .mp4.part, so the container has to be named.
     command.extend(["-f", "mp4", str(dest)])
     return command
@@ -614,13 +641,15 @@ def _finalize_title(title: str) -> str:
     return text.strip(" .-")
 
 
-def _download_language(video_id: str, language: str, directory: Path, ytdlp: str) -> Path | None:
+def _download_language(video_id: str, language: str, directory: Path, ytdlp: str) -> tuple[Path, str] | None:
+    """Return the SRT and whether the track was manual or automatic."""
     directory.mkdir(parents=True, exist_ok=True)
     for automatic in (False, True):
         _run_yt_dlp(video_id, language, directory, ytdlp, automatic)
         found = sorted(directory.glob("*.srt"))
         if found:
-            return found[0]
+            source = "automatic" if automatic else "manual"
+            return found[0], source
     return None
 
 
@@ -673,6 +702,180 @@ def _require_tool(name: str) -> str:
     return path
 
 
+def _configure_logging(level_name: str) -> "_LogHandler":
+    log.handlers.clear()
+    log.setLevel(_LOG_LEVELS[level_name])
+    log.propagate = False
+    handler = _LogHandler()
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    log.addHandler(handler)
+    return handler
+
+
+def _verbose(message: str, *args: object) -> None:
+    log.log(VERBOSE, message, *args)
+
+
+def _utc_timestamp(moment: datetime) -> str:
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _subtitle_summary(tracks: list[SubtitleTrack]) -> str:
+    if not tracks:
+        return "none"
+    return ", ".join(f"{track.language} ({track.source})" for track in tracks)
+
+
+def _progress_glyphs() -> tuple[str, str, str]:
+    encoding = getattr(sys.stderr, "encoding", None) or "utf-8"
+    try:
+        "━─…".encode(encoding)
+    except (LookupError, UnicodeError):
+        return "=", "-", "..."
+    return "━", "─", "…"
+
+
+def _format_progress(completed: int, total: int, description: str, columns: int) -> str:
+    """Fit '<completed> of <total> <bar> <description>' on one terminal row."""
+    fill, empty, ellipsis = _progress_glyphs()
+    width = max(1, columns - 1)
+    count = f"{completed} of {total}"
+    if len(count) >= width:
+        return count[:width]
+
+    description = " ".join(description.split())
+    remaining = width - len(count) - 1
+    min_bar = 8 if remaining >= 8 else remaining
+    room = remaining - min_bar
+    if description and room > 1:
+        desc_width = min(len(description), room - 1)
+        if len(description) > desc_width:
+            if desc_width <= len(ellipsis):
+                description = ""
+                desc_width = 0
+            else:
+                description = description[: desc_width - len(ellipsis)] + ellipsis
+                desc_width = len(description)
+    else:
+        description = ""
+        desc_width = 0
+
+    extra = 1 if description else 0
+    bar_width = max(0, remaining - desc_width - extra)
+    filled = 0
+    if bar_width and total > 0:
+        filled = int(bar_width * min(max(completed, 0), total) / total)
+        filled = min(bar_width, filled)
+    bar = fill * filled + empty * (bar_width - filled)
+    if description:
+        line = f"{count} {bar} {description}"
+    elif bar:
+        line = f"{count} {bar}"
+    else:
+        line = count
+    return line[:width]
+
+
+_cursor_hidden = False
+
+
+def _hide_cursor() -> None:
+    global _cursor_hidden
+    if _cursor_hidden or not sys.stderr.isatty():
+        return
+    sys.stderr.write("\033[?25l")
+    sys.stderr.flush()
+    _cursor_hidden = True
+    atexit.register(_show_cursor)
+
+
+def _show_cursor() -> None:
+    global _cursor_hidden
+    if not _cursor_hidden:
+        return
+    _cursor_hidden = False
+    try:
+        sys.stderr.write("\033[?25h")
+        sys.stderr.flush()
+    except Exception:
+        pass
+
+
+class _Progress:
+    """Keep a one-line progress bar on the last terminal row."""
+
+    def __init__(self, total: int):
+        self.total = total
+        self.completed = 0
+        self.description = ""
+        self.enabled = sys.stderr.isatty()
+        self._visible = False
+
+    def __enter__(self) -> "_Progress":
+        if self.enabled:
+            _hide_cursor()
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        if not self.enabled:
+            return
+        try:
+            if self._visible:
+                self._draw()
+                sys.stderr.write("\n")
+                sys.stderr.flush()
+                self._visible = False
+        finally:
+            _show_cursor()
+
+    def update(self, *, completed: int | None = None, description: str | None = None) -> None:
+        if completed is not None:
+            self.completed = completed
+        if description is not None:
+            self.description = description
+        self._draw()
+
+    def write(self, message: str) -> None:
+        """Print a log line above the bar, then draw the bar again."""
+        text = message.replace("\r\n", "\n").replace("\r", "\n").rstrip("\n")
+        if not self.enabled:
+            sys.stderr.write(text + "\n")
+            sys.stderr.flush()
+            return
+        sys.stderr.write("\r\033[K")
+        sys.stderr.write(text + "\n")
+        self._draw()
+
+    def _draw(self) -> None:
+        if not self.enabled:
+            return
+        columns = shutil.get_terminal_size(fallback=(80, 24)).columns
+        line = _format_progress(self.completed, self.total, self.description, columns)
+        sys.stderr.write("\r\033[K" + line)
+        sys.stderr.flush()
+        self._visible = True
+
+
+class _LogHandler(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__()
+        self.progress: _Progress | None = None
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            message = self.format(record)
+            progress = self.progress
+            if progress is not None:
+                progress.write(message)
+            else:
+                sys.stderr.write(message + "\n")
+                sys.stderr.flush()
+        except Exception:
+            self.handleError(record)
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Remux YouTube videos into dated MP4 files with cleaned titles."
@@ -697,6 +900,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="en",
         help="Comma-separated subtitle locales, in track order. Regions are ignored in the output. Default: en.",
     )
+    parser.add_argument(
+        "--log-level",
+        choices=("quiet", "info", "verbose"),
+        default="quiet",
+        help="quiet: progress bar only (default). info: a line per video. verbose: publish time and subtitles too.",
+    )
     return parser.parse_args(argv)
 
 
@@ -706,6 +915,7 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit("Missing Python package unidecode. Install it with: pip install unidecode")
     _require_tool("ffmpeg")
     _require_tool("ffprobe")
+    handler = _configure_logging(args.log_level)
 
     api_key = os.environ.get("YOUTUBE_API_KEY", "").strip()
     if not api_key:
@@ -715,12 +925,12 @@ def main(argv: list[str] | None = None) -> None:
     if not directory.is_dir():
         sys.exit(f"Not a directory: {directory}")
     output = prepare_output_directory(args.output or Path(f"{directory}.out"))
-    print(f"Output directory: {output}")
+    log.info("Output directory: %s", output)
 
     languages = parse_languages(args.lang)
     paths = list_videos(directory)
     if not paths:
-        print(f"No video files in {directory}.")
+        log.info("No video files in %s.", directory)
         return
 
     jobs: list[tuple[Path, str]] = []
@@ -728,11 +938,11 @@ def main(argv: list[str] | None = None) -> None:
         try:
             comment = read_comment(path)
         except RuntimeError as exc:
-            print(f"Warning: {path.name}: {exc}", file=sys.stderr)
+            log.warning("Warning: %s: %s", path.name, exc)
             continue
         video_id = extract_video_id(comment)
         if video_id is None:
-            print(f"Warning: {path.name}: no YouTube URL in the comment tag, skipping.", file=sys.stderr)
+            log.warning("Warning: %s: no YouTube URL in the comment tag, skipping.", path.name)
             continue
         jobs.append((path, video_id))
     if not jobs:
@@ -741,39 +951,52 @@ def main(argv: list[str] | None = None) -> None:
     published = fetch_published_dates([video_id for _path, video_id in jobs], api_key)
     ytdlp = shutil.which("yt-dlp")
     if languages and ytdlp is None:
-        print(
-            "Warning: yt-dlp is not installed; remuxing without subtitles. Install it with: brew install yt-dlp",
-            file=sys.stderr,
+        log.warning(
+            "Warning: yt-dlp is not installed; remuxing without subtitles. Install it with: brew install yt-dlp"
         )
 
     failures = 0
     claimed: set[Path] = set()
-    for path, video_id in jobs:
-        moment = published.get(video_id)
-        if moment is None:
-            print(f"Warning: {path.name}: no publish date for {video_id}, skipping.", file=sys.stderr)
-            continue
-        title = strip_title(path.stem) or video_id
-        dest = claim_destination(output, local_calendar_date(moment), title, video_id, claimed)
-        if dest is None:
-            print(f"Warning: {path.name}: output already exists, skipping.", file=sys.stderr)
-            continue
-        print(f"Processing {path.name} ...")
-        partial = build_partial_path(dest)
-        try:
-            with tempfile.TemporaryDirectory(prefix="youtube-remux-") as tmp:
-                subtitles: list[tuple[Path, str]] = []
-                if languages and ytdlp is not None:
-                    subtitles = download_subtitles(video_id, languages, Path(tmp), ytdlp)
-                command = build_ffmpeg_command(path, subtitles, partial, args.encode)
-                run_ffmpeg(command)
-            partial.replace(dest)
-        except RuntimeError as exc:
-            failures += 1
-            partial.unlink(missing_ok=True)
-            print(f"Error processing {path.name}: {exc}", file=sys.stderr)
-            continue
-        print(f"  -> {dest.name}")
+    progress = _Progress(len(jobs))
+    handler.progress = progress
+    try:
+        with progress:
+            for index, (path, video_id) in enumerate(jobs, start=1):
+                progress.update(completed=index, description=path.name)
+                moment = published.get(video_id)
+                if moment is None:
+                    log.warning("Warning: %s: no publish date for %s, skipping.", path.name, video_id)
+                    continue
+                title = strip_title(path.stem) or video_id
+                dest = claim_destination(output, local_calendar_date(moment), title, video_id, claimed)
+                if dest is None:
+                    log.warning("Warning: %s: output already exists, skipping.", path.name)
+                    continue
+                if log.isEnabledFor(VERBOSE):
+                    _verbose("Processing %s (published %s) ...", path.name, _utc_timestamp(moment))
+                else:
+                    log.info("Processing %s ...", path.name)
+                partial = build_partial_path(dest)
+                try:
+                    with tempfile.TemporaryDirectory(prefix="youtube-remux-") as tmp:
+                        subtitles: list[SubtitleTrack] = []
+                        if languages and ytdlp is not None:
+                            subtitles = download_subtitles(video_id, languages, Path(tmp), ytdlp)
+                        command = build_ffmpeg_command(path, subtitles, partial, args.encode)
+                        run_ffmpeg(command)
+                    partial.replace(dest)
+                except RuntimeError as exc:
+                    failures += 1
+                    partial.unlink(missing_ok=True)
+                    log.error("Error processing %s: %s", path.name, exc)
+                    continue
+                if log.isEnabledFor(VERBOSE):
+                    _verbose("  -> %s (subtitles: %s)", dest.name, _subtitle_summary(subtitles))
+                else:
+                    log.info("  -> %s", dest.name)
+            progress.update(description="Done", completed=len(jobs))
+    finally:
+        handler.progress = None
 
     if failures:
         sys.exit(1)
